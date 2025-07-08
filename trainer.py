@@ -10,7 +10,6 @@ from pathlib import Path
 from utils.replay_memory import ReplayMemory
 import matplotlib.pyplot as plt
 
-
 class DQNTrainer:
     def __init__(self, env, policy_net, target_net, config):
         self.rewards_log = []
@@ -19,8 +18,12 @@ class DQNTrainer:
         self.target_net = target_net
         self.cfg = config
 
+        # Detectar dispositivo
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f" Usando dispositivo: {self.device}")
+        assert next(self.policy_net.parameters()).device == self.device, " El modelo no está en el dispositivo correcto"
 
+        # Componentes de entrenamiento
         self.memory = ReplayMemory(self.cfg["training"]["memory_size"])
         self.optimizer = optim.Adam(self.policy_net.parameters(), lr=self.cfg["training"]["learning_rate"])
         self.epsilon = self.cfg["training"]["epsilon_start"]
@@ -29,7 +32,9 @@ class DQNTrainer:
         self.checkpoint_dir.mkdir(exist_ok=True)
 
     def preprocess(self, obs):
-        return torch.tensor(np.moveaxis(obs, -1, 0), dtype=torch.float32).unsqueeze(0).to(self.device)
+        # Convertir la observación (HWC) a tensor CHW en float32
+        tensor = torch.from_numpy(np.moveaxis(obs, -1, 0)).float()
+        return tensor.unsqueeze(0).to(self.device)
 
     def save_plot(self):
         plt.figure(figsize=(10, 4))
@@ -41,7 +46,7 @@ class DQNTrainer:
         plt.tight_layout()
         plt.savefig("reward_curve.png")
         plt.close()
-        print("Gráfica de recompensas guardada como reward_curve.png")
+        print(" Gráfica de recompensas guardada como reward_curve.png")
 
     def train(self):
         for episode in range(self.cfg["training"]["episodes"]):
@@ -49,6 +54,7 @@ class DQNTrainer:
             total_reward = 0
 
             for _ in range(self.cfg["training"]["max_steps"]):
+                # Política ε-greedy
                 if random.random() < self.epsilon:
                     action = random.randint(0, self.cfg["env"]["actions"] - 1)
                 else:
@@ -57,43 +63,52 @@ class DQNTrainer:
                         q_values = self.policy_net(state_tensor)
                         action = q_values.argmax().item()
 
+                # Ejecutar acción
                 next_obs, reward, done, _ = self.env.step(action)
                 total_reward += reward
 
+                # Guardar en memoria
                 self.memory.push(obs, action, reward, next_obs, done)
                 obs = next_obs
 
+                # Optimizar
                 if len(self.memory) > self.cfg["training"]["batch_size"]:
                     self.optimize_model()
 
                 if done:
                     break
 
+            # Actualizar red objetivo y guardar modelo
             self.update_target_network(episode)
             self.save_checkpoints(episode, total_reward)
             self.epsilon = max(self.cfg["training"]["epsilon_end"], self.epsilon * self.cfg["training"]["epsilon_decay"])
             self.rewards_log.append(total_reward)
+
             print(f"Ep {episode+1}, Reward: {total_reward:.2f}, Epsilon: {self.epsilon:.3f}")
         
         self.env.close()
         self.save_plot()
 
-
     def optimize_model(self):
         batch = self.memory.sample(self.cfg["training"]["batch_size"])
         states, actions, rewards, next_states, dones = batch
 
-        states = torch.tensor(np.moveaxis(states, -1, 1), dtype=torch.float32).to(self.device)
-        next_states = torch.tensor(np.moveaxis(next_states, -1, 1), dtype=torch.float32).to(self.device)
-        actions = torch.tensor(actions).unsqueeze(1).to(self.device)
-        rewards = torch.tensor(rewards, dtype=torch.float32).to(self.device)
-        dones = torch.tensor(dones, dtype=torch.float32).to(self.device)
+        # Conversión rápida con from_numpy
+        states = torch.from_numpy(np.moveaxis(states, -1, 1)).float().to(self.device)
+        next_states = torch.from_numpy(np.moveaxis(next_states, -1, 1)).float().to(self.device)
+        actions = torch.from_numpy(actions).long().unsqueeze(1).to(self.device)
+        rewards = torch.from_numpy(rewards).float().to(self.device)
+        dones = torch.from_numpy(dones).float().to(self.device)
 
-        q_values = self.policy_net(states).gather(1, actions).squeeze()
+        # Calcular Q valores actuales
+        q_values = self.policy_net(states).gather(1, actions).squeeze(1)
+
+        # Calcular objetivo
         with torch.no_grad():
             max_next_q = self.target_net(next_states).max(1)[0]
             target = rewards + self.cfg["training"]["gamma"] * max_next_q * (1 - dones)
 
+        # Backprop
         loss = nn.MSELoss()(q_values, target)
         self.optimizer.zero_grad()
         loss.backward()
@@ -110,4 +125,5 @@ class DQNTrainer:
         if total_reward > self.best_reward:
             self.best_reward = total_reward
             torch.save(self.policy_net.state_dict(), self.checkpoint_dir / "dqn_best.pth")
-            print(f"Nuevo mejor modelo guardado (reward = {self.best_reward:.2f})")
+            print(f" Nuevo mejor modelo guardado (reward = {self.best_reward:.2f})")
+            

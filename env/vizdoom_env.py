@@ -8,10 +8,11 @@ import cv2
 import os
 
 class VizDoomGym(Env): 
-    def __init__(self, render=False): 
+    def __init__(self, render=False, config_path=None): 
         super().__init__()
         self.game = DoomGame()
-        config_path = os.path.join(os.path.dirname(__file__), "..", "config", "defend_the_center.cfg")
+        if config_path is None:
+            config_path = os.path.join(os.path.dirname(__file__), "..", "config", "defend_the_center.cfg")
         self.game.load_config(config_path)
         
         self.game.set_window_visible(render)

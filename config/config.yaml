@@ -1,13 +1,12 @@
-# config/config.yaml
-
 env:
   render: false
   input_shape: [1, 100, 160]
   actions: 3
+  scenario_path: "config/defend_the_center.cfg"  # Ruta al archivo del escenario
 
 training:
   episodes: 500
-  max_steps: 1000
+  max_steps: 250
   gamma: 0.99
   epsilon_start: 1.0
   epsilon_end: 0.1
