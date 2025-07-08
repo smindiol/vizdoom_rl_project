@@ -2,10 +2,10 @@ env:
   render: false
   input_shape: [1, 100, 160]
   actions: 3
-  scenario_path: "config/defend_the_center.cfg"  # Ruta al archivo del escenario
+  scenario_path: ViZDoom/scenarios/defend_the_center.cfg
 
 training:
-  episodes: 500
+  episodes: 1000          # Total deseado (contando anteriores si hay)
   max_steps: 250
   gamma: 0.99
   epsilon_start: 1.0
@@ -16,3 +16,4 @@ training:
   memory_size: 10000
   target_update_freq: 10
   checkpoint_freq: 50
+  checkpoint_path: checkpoints/defend_the_center

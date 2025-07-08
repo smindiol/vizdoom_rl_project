@@ -1,28 +1,33 @@
-# main.py
-
 import yaml
 import torch
 from env.vizdoom_env import VizDoomGym
-from models.dqn import DQN
 from trainer import DQNTrainer
 
 # Cargar configuración
-with open("config/config.yaml", "r") as f:
+with open("config/config_defend_the_center.yaml", "r") as f:
     cfg = yaml.safe_load(f)
 
-# Leer parámetros del entorno
+# Crear entorno
 scenario_path = cfg["env"]["scenario_path"]
+env = VizDoomGym(render=cfg["env"]["render"], config_path=scenario_path)
+
+# Parámetros
 input_shape = tuple(cfg["env"]["input_shape"])
 n_actions = cfg["env"]["actions"]
-render = cfg["env"]["render"]
+model_type = cfg.get("model", {}).get("type", "dqn")
 
-# Crear entorno
-env = VizDoomGym(render=render, config_path=scenario_path)
+# Selección de modelo
+if model_type == "dqn":
+    from models.dqn import DQN as SelectedModel
+elif model_type == "dqn_att":
+    from models.dqn_att import DQNWithAttention as SelectedModel
+else:
+    raise ValueError(f"Modelo no reconocido: {model_type}")
 
-# Detectar dispositivo y mover modelos
+# Preparar modelo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-policy_net = DQN(input_shape, n_actions).to(device)
-target_net = DQN(input_shape, n_actions).to(device)
+policy_net = SelectedModel(input_shape, n_actions).to(device)
+target_net = SelectedModel(input_shape, n_actions).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
