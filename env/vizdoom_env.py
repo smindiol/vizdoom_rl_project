@@ -19,21 +19,26 @@ class VizDoomGym(Env):
         self.game.init()
 
         self.observation_space = Box(low=0, high=255, shape=(100,160,1), dtype=np.uint8) 
-        self.action_space = Discrete(3)
-        
-    def step(self, action):
+        self.action_space = Discrete(3)      
+    def step(self, action, frame_skip=1):
         actions = np.identity(3)
-        reward = self.game.make_action(actions[action], 4) 
-        
-        if self.game.get_state(): 
+        total_reward = 0.0
+        done = False
+        info = {}
+        for _ in range(frame_skip):
+            reward = self.game.make_action(actions[action], 1)
+            total_reward += reward
+            done = self.game.is_episode_finished()
+            if done:
+                break
+
+        if self.game.get_state():
             state = self.grayscale(self.game.get_state().screen_buffer)
             info = {"info": self.game.get_state().game_variables[0]}
-        else: 
+        else:
             state = np.zeros(self.observation_space.shape)
             info = {"info": 0}
-        
-        done = self.game.is_episode_finished()
-        return state, reward, done, info 
+        return state, total_reward, done, info
     
     def reset(self): 
         self.game.new_episode()

@@ -93,7 +93,7 @@ class DQNTrainer:
 
                 if len(self.memory) > self.cfg["training"]["batch_size"]:
                     self.optimize_model()
-
+ 
                 if done:
                     break
 

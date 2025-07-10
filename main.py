@@ -2,7 +2,7 @@ import yaml
 import torch
 from env.vizdoom_env import VizDoomGym
 from trainer import DQNTrainer
-
+ 
 # Cargar configuración
 with open("config/config_defend_the_center.yaml", "r") as f:
     cfg = yaml.safe_load(f)
@@ -33,4 +33,12 @@ target_net.eval()
 
 # Entrenamiento
 trainer = DQNTrainer(env, policy_net, target_net, cfg)
-trainer.train()
+# Entrenamiento con manejo de Ctrl+C
+try:
+    trainer.train()
+except KeyboardInterrupt:
+    print("\n🛑 Entrenamiento interrumpido por el usuario (Ctrl+C). Guardando progreso...")
+    trainer.env.close()
+    trainer.save_plot()
+    # Puedes también guardar manualmente el estado final aquí si lo deseas
+    print("✅ Progreso guardado. Finalizando.")

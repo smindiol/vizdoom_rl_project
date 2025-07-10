@@ -4,19 +4,34 @@ import torch
 import numpy as np
 import time
 from env.vizdoom_env import VizDoomGym
-from models.dqn import DQN
-
+import yaml
+ 
+# Cargar configuración
+with open("config/config_defend_the_center.yaml", "r") as f:
+    cfg = yaml.safe_load(f)
 # Dispositivo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 # Cargar entorno con render activado
-env = VizDoomGym(render=True)
+scenario_path = cfg["env"]["scenario_path"]
+env = VizDoomGym(render=True, config_path=scenario_path)
 input_shape = (1, 100, 160)
-n_actions = env.action_space.n
+# Parámetros
+input_shape = tuple(cfg["env"]["input_shape"])
+n_actions = cfg["env"]["actions"]
+model_type = cfg.get("model", {}).get("type", "dqn")
+# Selección de modelo
+if model_type == "dqn":
+    from models.dqn import DQN as SelectedModel
+elif model_type == "dqn_att":
+    from models.dqn_att import DQNWithAttention as SelectedModel
+else:
+    raise ValueError(f"Modelo no reconocido: {model_type}")
 
 # Cargar red y pesos
-policy_net = DQN(input_shape, n_actions).to(device)
-policy_net.load_state_dict(torch.load("checkpoints/dqn_best.pth", map_location=device))
+policy_net = SelectedModel(input_shape, n_actions).to(device)
+import os
+model_best_path = os.path.join(cfg["training"]["checkpoint_path"], "dqn_best.pth")
+policy_net.load_state_dict(torch.load(model_best_path, map_location=device))
 policy_net.eval()
 
 def preprocess(obs):

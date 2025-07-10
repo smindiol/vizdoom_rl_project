@@ -1,22 +1,21 @@
 env:
   render: false
-  input_shape: [1, 100, 160]
+  input_shape: [1,100, 160]  #  Pon [3, H, W] aquí, el canal 4 se agrega dinámicamente
   actions: 3
   scenario_path: config/defend_the_center.cfg
 
 training:
-  episodes: 1000          # Total deseado (contando anteriores si hay)
-  max_steps: 250
+  episodes: 1500
+  max_steps: 600
   gamma: 0.99
   epsilon_start: 1.0
   epsilon_end: 0.1
   epsilon_decay: 0.995
-  learning_rate: 0.0001
+  learning_rate: 0.00005
   batch_size: 64
   memory_size: 10000
   target_update_freq: 10
   checkpoint_freq: 50
-  checkpoint_path: checkpoints/defend_the_center_dqn_a
-
-model:
-  type: dqn_att  # Opciones: dqn o dqn_att
+  checkpoint_path: checkpoints/defend_the_center_dqn_att
+  model:
+  type: dqn_att  # Opciones: dqn, dqn_att, dqn_att_yolo
