@@ -34,11 +34,14 @@ target_net.eval()
 # Entrenamiento
 trainer = DQNTrainer(env, policy_net, target_net, cfg)
 # Entrenamiento con manejo de Ctrl+C
+# ...código anterior...
+
+# Entrenamiento con manejo robusto de Ctrl+C y cierre seguro
 try:
     trainer.train()
 except KeyboardInterrupt:
-    print("\n🛑 Entrenamiento interrumpido por el usuario (Ctrl+C). Guardando progreso...")
+    print("\n🚨 Entrenamiento detenido por el usuario. Guardando todo...")
+finally:
     trainer.env.close()
     trainer.save_plot()
-    # Puedes también guardar manualmente el estado final aquí si lo deseas
-    print("✅ Progreso guardado. Finalizando.")
+    print("🟢 Progreso y entorno cerrados correctamente. ¡Hasta luego!")
