@@ -55,4 +55,3 @@ watcher_thread.start()
 #  Entrenamiento con manejo seguro
 trainer.save_plot()
 trainer.train()
-print("\n Entrenamiento detenido por el usuario. Guardando todo...")
