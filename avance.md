@@ -82,8 +82,5 @@ Esto permite una alta flexibilidad en la experimentación con distintas represen
 
 ## 🔜 Próximos Pasos
 
-- Realizar entrenamiento extendido a 5000 episodios.
-- Integrar canales adicionales con información semántica.
-- Evaluar modelos con y sin atención bajo las mismas condiciones.
-- Documentar resultados y preparar publicación técnica.
+- Probar otros filtros y comparar resultados.
 
