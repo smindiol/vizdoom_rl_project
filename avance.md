@@ -45,9 +45,7 @@ El procesamiento visual es fundamental para el aprendizaje del agente, ya que la
 - **Conversión a escala de grises**: reduce la dimensionalidad y resalta formas.
 - **Redimensionamiento uniforme**: se reescalan las imágenes a `[100 x 160]`, normalizando el input para la red.
 - **Normalización**: valores de píxel llevados a rango `[0, 1]`.
-- **Apilamiento de frames**: cuatro frames consecutivos se agrupan como un solo input (captura del movimiento).
-- **Detección de bordes** (opcional): realce de contornos y siluetas mediante kernels.
-- **Mapas de calor o etiquetas**: integración futura con detección de enemigos mediante `labels_buffer`.
+- **Detección de bordes**: realce de contornos y siluetas mediante kernels.
 
 ### Posibilidades adicionales ya contempladas:
 
@@ -66,7 +64,6 @@ Esto permite una alta flexibilidad en la experimentación con distintas represen
 
 - Pruebas comparativas con modelo `DQN` base (sin atención).
 - Evaluación del impacto de los filtros visuales en el aprendizaje.
-- Medición del tiempo de entrenamiento vs rendimiento del agente.
 
 ---
 
@@ -78,7 +75,4 @@ Esto permite una alta flexibilidad en la experimentación con distintas represen
 
 ---
 
-## 🔜 Próximos Pasos
-
-- Probar otros filtros y comparar resultados.
 
