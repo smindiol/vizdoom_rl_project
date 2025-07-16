@@ -11,10 +11,11 @@ class SpatialAttention(nn.Module):
         attention = torch.sigmoid(self.conv(x))  # [B, 1, H, W]
         return x * attention
 
+
 class DQNWithAttention(nn.Module):
     def __init__(self, input_shape, num_actions):
         super(DQNWithAttention, self).__init__()
-        c, h, w = input_shape  # Ej: (2, 100, 160) si agregas máscara
+        c, h, w = input_shape  # Ej: (1, 100, 160)
 
         self.conv = nn.Sequential(
             nn.Conv2d(c, 32, kernel_size=8, stride=4),
@@ -30,9 +31,9 @@ class DQNWithAttention(nn.Module):
 
         self.attention = SpatialAttention(64)
 
-        # Determinar tamaño de salida automáticamente
+        #  dummy_input solo para calcular tamaño del vector FC, aún en CPU
         with torch.no_grad():
-            dummy_input = torch.zeros(1, *input_shape)
+            dummy_input = torch.zeros(1, *input_shape)  # En CPU
             conv_out = self.conv(dummy_input)
             conv_out = self.attention(conv_out)
             conv_output_size = conv_out.view(1, -1).size(1)
@@ -45,7 +46,8 @@ class DQNWithAttention(nn.Module):
         )
 
     def forward(self, x):
-        x = x / 255.0  # Normalizar imágenes
+        #assert x.device == next(self.parameters()).device, " Input no está en el mismo device que el modelo"
+        x = x / 255.0  # Normalización
         x = self.conv(x)
         x = self.attention(x)
         return self.fc(x.reshape(x.size(0), -1))

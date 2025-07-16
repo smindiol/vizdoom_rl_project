@@ -1,5 +1,4 @@
 # eval.py
-
 import torch
 import numpy as np
 import time
@@ -14,7 +13,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Cargar entorno con render activado
 scenario_path = cfg["env"]["scenario_path"]
 env = VizDoomGym(render=True, config_path=scenario_path)
-input_shape = (1, 100, 160)
 # Parámetros
 input_shape = tuple(cfg["env"]["input_shape"])
 n_actions = cfg["env"]["actions"]
@@ -23,7 +21,7 @@ model_type = cfg.get("model", {}).get("type", "dqn")
 if model_type == "dqn":
     from models.dqn import DQN as SelectedModel
 elif model_type == "dqn_att":
-    from models.dqn_att import DQNWithAttention as SelectedModel
+    from models.dqn_att import DQNWithAttention  as SelectedModel
 else:
     raise ValueError(f"Modelo no reconocido: {model_type}")
 
