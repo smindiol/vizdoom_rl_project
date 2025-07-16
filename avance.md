@@ -49,8 +49,6 @@ El procesamiento visual es fundamental para el aprendizaje del agente, ya que la
 
 ### Posibilidades adicionales ya contempladas:
 
-- Canal auxiliar con detección de enemigos (YOLO).
-- Mapa semántico o máscara binaria para entidades clave.
 - Aplicación de filtros como:
   - Sharpening (agudizado)
   - Gaussian Blur
