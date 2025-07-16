@@ -30,11 +30,9 @@ Esta atención permite al modelo priorizar áreas de interés visual (como enemi
 
 Se ha completado un entrenamiento de **1000 episodios**. El progreso se almacenó en los checkpoints y se generó una curva de rendimiento.
 
-### 🖼️ Gráfica de Recompensa Promedio
+### 🖼️ Gráfica de Recompensa por episodio
 
-![Curva de entrenamiento](checkpoints/curva_entrenamiento.png)
-
-> *La curva muestra un incremento sostenido en la recompensa promedio por episodio, lo cual indica que el agente ha aprendido una política efectiva de supervivencia y ataque en el escenario.*
+![Curva de entrenamiento](checkpoints/defend_the_center_dqn_a/reward_curve.png)
 
 ---
 
