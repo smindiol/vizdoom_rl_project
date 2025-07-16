@@ -27,7 +27,7 @@ else:
 
 #  Preparar modelo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"🖥️  Dispositivo actual: {device}")
+print(f"  Dispositivo actual: {device}")
 
 policy_net = SelectedModel(input_shape, n_actions).to(device)
 target_net = SelectedModel(input_shape, n_actions).to(device)
@@ -35,8 +35,8 @@ target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
 #  Verificación y diagnóstico
-print(f"📦 policy_net en: {next(policy_net.parameters()).device}")
-print(f"📦 target_net en: {next(target_net.parameters()).device}")
+print(f" policy_net en: {next(policy_net.parameters()).device}")
+print(f" target_net en: {next(target_net.parameters()).device}")
 param_device = next(policy_net.parameters()).device
 assert param_device.type == device.type, f" policy_net está en {param_device}, esperado en {device}"
 
@@ -53,11 +53,6 @@ watcher_thread = threading.Thread(target=keyboard_watcher, daemon=True)
 watcher_thread.start()
 
 #  Entrenamiento con manejo seguro
-try:
-    trainer.train()
-except KeyboardInterrupt:
-    print("\n Entrenamiento detenido por el usuario. Guardando todo...")
-finally:
-    trainer.env.close()
-    trainer.save_plot()
-    print(" Progreso y entorno cerrados correctamente. ¡Hasta luego!")
+trainer.save_plot()
+trainer.train()
+print("\n Entrenamiento detenido por el usuario. Guardando todo...")
