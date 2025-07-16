@@ -43,15 +43,5 @@ assert param_device.type == device.type, f" policy_net está en {param_device}, 
 #  Preparar trainer
 trainer = DQNTrainer(env, policy_net, target_net, cfg)
 
-#  Función de escape con ENTER
-def keyboard_watcher():
-    input(" Presiona ENTER en cualquier momento para detener el entrenamiento...\n")
-    raise KeyboardInterrupt
-
-#  Lanzar watcher
-watcher_thread = threading.Thread(target=keyboard_watcher, daemon=True)
-watcher_thread.start()
-
-#  Entrenamiento con manejo seguro
 trainer.save_plot()
 trainer.train()
