@@ -99,7 +99,7 @@ class DQNTrainer:
                     with torch.no_grad():
                         if getattr(self.policy_net, "use_game_vars", False):
                             input_tensor, vars_tensor = self.preprocess(obs, game_vars)
-                            q_values = self.policy_net(input_tensor, vars_tensor)
+                            q_values, _ = self.policy_net(input_tensor, vars_tensor)
                         else:
                             input_tensor = self.preprocess(obs)
                             q_values = self.policy_net(input_tensor)
