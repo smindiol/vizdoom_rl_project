@@ -19,7 +19,7 @@ n_actions = cfg["env"]["actions"]
 model_type = cfg.get("model", {}).get("type", "dqn")
 # Selección de modelo
 if model_type == "dqn":
-    from models.dqn import DQN as SelectedModel
+    from models.dqn_GRU import DQN as SelectedModel
 elif model_type == "dqn_att":
     from models.dqn_att import DQNWithAttention  as SelectedModel
 else:

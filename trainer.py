@@ -75,14 +75,20 @@ class DQNTrainer:
         else:
             print(" No se encontraron métricas anteriores.")
 
-    def preprocess(self, obs):
+    def preprocess(self, obs, game_vars=None):
         # (H, W, C) → (C, H, W) → [1, C, H, W] en float
-        tensor = torch.from_numpy(np.moveaxis(obs, -1, 0)).float()
-        return tensor.unsqueeze(0).to(self.device)
+        img_tensor = torch.from_numpy(np.moveaxis(obs, -1, 0)).float().unsqueeze(0).to(self.device)  # [1, C, H, W]
+        if getattr(self.policy_net, "use_game_vars", False):
+            vars_tensor = torch.tensor(game_vars, dtype=torch.float32).unsqueeze(0).to(self.device)  # [1, 2]
+            return img_tensor, vars_tensor
+        else:
+            return img_tensor
 
     def train(self):
         for episode in range(self.start_episode, self.cfg["training"]["episodes"]):
             obs = self.env.reset()
+            if getattr(self.policy_net, "use_game_vars", False):
+                 game_vars = self.env.get_game_vars()  # ejemplo: [health, ammo]
             total_reward = 0
             steps = 0
 
@@ -91,12 +97,17 @@ class DQNTrainer:
                     action = random.randint(0, self.cfg["env"]["actions"] - 1)
                 else:
                     with torch.no_grad():
-                        input_tensor = self.preprocess(obs)
-                        #assert input_tensor.device == self.device, " Input no está en el dispositivo esperado"
-                        q_values = self.policy_net(input_tensor)
+                        if getattr(self.policy_net, "use_game_vars", False):
+                            input_tensor, vars_tensor = self.preprocess(obs, game_vars)
+                            q_values = self.policy_net(input_tensor, vars_tensor)
+                        else:
+                            input_tensor = self.preprocess(obs)
+                            q_values = self.policy_net(input_tensor)
                         action = q_values.argmax().item()
 
                 next_obs, reward, done, _ = self.env.step(action)
+                if getattr(self.policy_net, "use_game_vars", False):
+                    game_vars = self.env.get_game_vars()
                 total_reward += reward
                 self.memory.push(obs, action, reward, next_obs, done)
                 obs = next_obs
@@ -121,27 +132,49 @@ class DQNTrainer:
 
         self.env.close()
         self.save_plot()
-
+        
     def optimize_model(self):
         batch = self.memory.sample(self.cfg["training"]["batch_size"])
-        states, actions, rewards, next_states, dones = batch
 
-        # Montar todo en CUDA
-        states = torch.from_numpy(np.moveaxis(states, -1, 1)).float().to(self.device)
-        next_states = torch.from_numpy(np.moveaxis(next_states, -1, 1)).float().to(self.device)
-        actions = torch.from_numpy(actions).long().unsqueeze(1).to(self.device)
-        rewards = torch.from_numpy(rewards).float().to(self.device)
-        dones = torch.from_numpy(dones).float().to(self.device)
+        if getattr(self.policy_net, "use_game_vars", False):
+            obs_imgs, obs_vars, actions, rewards, next_obs_imgs, next_obs_vars, dones = batch
 
-        q_values = self.policy_net(states).gather(1, actions).squeeze(1)
-        with torch.no_grad():
-            max_next_q = self.target_net(next_states).max(1)[0]
-            target = rewards + self.cfg["training"]["gamma"] * max_next_q * (1 - dones)
+            obs_imgs = torch.from_numpy(np.moveaxis(obs_imgs, -1, 1)).float().to(self.device)
+            next_obs_imgs = torch.from_numpy(np.moveaxis(next_obs_imgs, -1, 1)).float().to(self.device)
+            obs_vars = torch.from_numpy(obs_vars).float().to(self.device)
+            next_obs_vars = torch.from_numpy(next_obs_vars).float().to(self.device)
+            actions = torch.from_numpy(actions).long().unsqueeze(1).to(self.device)
+            rewards = torch.from_numpy(rewards).float().to(self.device)
+            dones = torch.from_numpy(dones).float().to(self.device)
+
+            q_values, _ = self.policy_net(obs_imgs, obs_vars)
+            q_values = q_values.gather(1, actions).squeeze(1)
+
+            with torch.no_grad():
+                next_q_values, _ = self.target_net(next_obs_imgs, next_obs_vars)
+                max_next_q = next_q_values.max(1)[0]
+                target = rewards + self.cfg["training"]["gamma"] * max_next_q * (1 - dones)
+
+        else:
+            states, actions, rewards, next_states, dones = batch
+
+            states = torch.from_numpy(np.moveaxis(states, -1, 1)).float().to(self.device)
+            next_states = torch.from_numpy(np.moveaxis(next_states, -1, 1)).float().to(self.device)
+            actions = torch.from_numpy(actions).long().unsqueeze(1).to(self.device)
+            rewards = torch.from_numpy(rewards).float().to(self.device)
+            dones = torch.from_numpy(dones).float().to(self.device)
+
+            q_values = self.policy_net(states).gather(1, actions).squeeze(1)
+
+            with torch.no_grad():
+                max_next_q = self.target_net(next_states).max(1)[0]
+                target = rewards + self.cfg["training"]["gamma"] * max_next_q * (1 - dones)
 
         loss = nn.MSELoss()(q_values, target)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
 
     def update_target_network(self, episode):
         if (episode + 1) % self.cfg["training"]["target_update_freq"] == 0:
