@@ -58,8 +58,7 @@ class RecurrentDQNWithAttention(nn.Module):
 
         x = self.conv(x)
         x = self.attention(x)
-        x = x.view(B, -1)  # [B, cnn_output_size]
-
+        x = x.reshape(B, -1)
         # Concatenar con game variables
         x = torch.cat([x, game_vars], dim=1)  # [B, cnn+vars]
 

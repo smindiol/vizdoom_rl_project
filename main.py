@@ -4,7 +4,7 @@ import threading
 from trainer import DQNTrainer
 
 #  Cargar configuración
-with open("config/config_defend_the_center.yaml", "r") as f:
+with open("config/config_defend_the_center_rr.yaml", "r") as f:
     cfg = yaml.safe_load(f)
  
 #  Crear entorno

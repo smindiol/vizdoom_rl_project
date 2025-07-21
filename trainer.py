@@ -107,9 +107,12 @@ class DQNTrainer:
 
                 next_obs, reward, done, _ = self.env.step(action)
                 if getattr(self.policy_net, "use_game_vars", False):
-                    game_vars = self.env.get_game_vars()
+                    next_vars = self.env.get_game_vars()
+                    self.memory.push(obs, action, reward, next_obs, done, game_vars, next_vars)
+                    game_vars = next_vars  # actualiza para el siguiente paso
+                else:
+                    self.memory.push(obs, action, reward, next_obs, done)
                 total_reward += reward
-                self.memory.push(obs, action, reward, next_obs, done)
                 obs = next_obs
                 steps += 1
 
