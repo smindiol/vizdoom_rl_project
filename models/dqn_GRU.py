@@ -13,7 +13,7 @@ class SpatialAttention(nn.Module):
         attention = torch.sigmoid(self.conv(x))  # [B, 1, H, W]
         return x * attention
 
-
+ 
 class RecurrentDQNWithAttention(nn.Module):
     def __init__(self, input_shape, num_game_vars, num_actions, hidden_size=256):
         super(RecurrentDQNWithAttention, self).__init__()
@@ -68,3 +68,6 @@ class RecurrentDQNWithAttention(nn.Module):
 
         q_values = self.fc(output.squeeze(1))  # [B, num_actions]
         return q_values, h
+    
+    def init_hidden(self, batch_size):
+        return torch.zeros(1, batch_size, self.gru.hidden_size, device=next(self.parameters()).device)

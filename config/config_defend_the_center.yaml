@@ -1,9 +1,9 @@
 env:
   render: false
-  input_shape: [2,100, 160]  #  Pon [3, H, W] aquí, el canal 4 se agrega dinámicamente
+  input_shape: [1,100, 160]  #  Pon [3, H, W] aquí, el canal 4 se agrega dinámicamente
   actions: 3
   scenario_path: config/defend_the_center.cfg
- 
+  
 training:
   episodes: 1000
   max_steps: 500
@@ -16,6 +16,6 @@ training:
   memory_size: 10000
   target_update_freq: 10
   checkpoint_freq: 50
-  checkpoint_path: checkpoints/defend_the_center_dqn_profundidas
+  checkpoint_path: checkpoints/defend_the_center_dqn_SIMPLE
 model:
   type: dqn_att  # Opciones: dqn, dqn_att, dqn_att_yolo

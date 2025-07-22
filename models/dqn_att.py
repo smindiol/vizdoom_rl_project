@@ -28,7 +28,7 @@ class DQNWithAttention(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU()
         )
-
+ 
         self.attention = SpatialAttention(64)
 
         #  dummy_input solo para calcular tamaño del vector FC, aún en CPU
