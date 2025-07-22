@@ -2,9 +2,23 @@ import yaml
 import torch
 import threading
 from trainer import DQNTrainer
+import argparse
+import os
 
-#  Cargar configuración
-with open("config/config_defend_the_center_rr.yaml", "r") as f:
+
+# Argumentos por terminal
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "config_name",
+    nargs="?",
+    default="config_defend_the_center_profundidad.yaml",
+    help="Archivo YAML de configuración (por defecto: config_defend_the_center.yaml)"
+)
+args = parser.parse_args()
+config_path = os.path.join("config", args.config_name)
+
+# Cargar configuración
+with open(config_path, "r") as f:
     cfg = yaml.safe_load(f)
  
 #  Crear entorno
