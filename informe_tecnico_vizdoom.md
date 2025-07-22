@@ -30,9 +30,6 @@ gray = cv2.cvtColor(np.moveaxis(observation, 0, -1), cv2.COLOR_BGR2GRAY)
 resized = cv2.resize(gray, (160, 100), interpolation=cv2.INTER_CUBIC)
 edges = cv2.Canny(resized, 100, 200)
 return np.reshape(edges, (100, 160, 1))
-```
-**Resultado ejemplo:**  
-![Canny Grayscale Example](figuras/ejemplo_gris_canny.png)
 
 ---
 
@@ -50,7 +47,7 @@ depth_norm = ((depth_norm - np.min(depth_norm)) / (np.ptp(depth_norm) + 1e-5) * 
 return np.stack([edges, depth_norm], axis=-1)
 ```
 **Resultado ejemplo:**  
-![Canny Profundidad Example](figuras/ejemplo_gris_canny_profundidad.png)
+![Canny Profundidad Example](figuras/ejemplo_bordes_profundidad.png)
 
 ---
 
@@ -82,38 +79,29 @@ Usada para entradas con variables internas:
 - Pasaje por capas lineales y finalmente una capa recurrente (ejemplo: GRU).
 - Permite mantener memoria temporal, mejorando el rendimiento en tareas secuenciales.
 
----
-
-## 5. Ejemplo de Resultados de Preprocesamiento
-
-A continuación se muestran ejemplos reales del procesamiento aplicados sobre imágenes de la carpeta `figuras`:
-
-| Entrada original | Procesamiento (Canny + Grises) | Procesamiento (Canny + Profundidad) |
-|---|---|---|
-| ![](figuras/original.png) | ![](figuras/ejemplo_gris_canny.png) | ![](figuras/ejemplo_gris_canny_profundidad.png) |
 
 ---
 
-## 6. Resultados de Entrenamiento y Análisis de Desempeño
+## 5. Resultados de Entrenamiento y Análisis de Desempeño
 
 En los tres casos evaluados, el agente logró alcanzar una recompensa máxima de **16 puntos**, lo que indica que el modelo aprendió exitosamente la tarea de defender el centro.
 
 A continuación se muestran las curvas de recompensa obtenidas durante el entrenamiento (archivos `reward_curve.png` de cada subcarpeta de `checkpoints/`):
 
 ### Caso 1: Imagen (Canny+Grises)
-![](checkpoints/canny_gris/reward_curve.png)
+![](checkpoints/defend_the_center_dqn_SIMPLE/reward_curve.png)
 
 ### Caso 2: Imagen + Profundidad
-![](checkpoints/canny_profundidad/reward_curve.png)
+![](checkpoints/defend_the_center_PROFUNDIDAD/reward_curve.png)
 
 ### Caso 3: Imagen + Profundidad + Variables internas
-![](checkpoints/recurrente/reward_curve.png)
+![](checkpoints/defed_the_center_RECURRENTE/reward_curve.png)
 
 Estas gráficas muestran cómo al inicio, el modelo explora y toma muchas decisiones aleatorias (por el uso de la estrategia epsilon-greedy), lo que genera gran variabilidad en la recompensa. A medida que avanza el entrenamiento y se explota más la política aprendida, la recompensa aumenta y se estabiliza cerca del máximo posible.
 
 ---
 
-## 7. Conclusiones
+## 6. Conclusiones
 
 - El agente logró aprender a defender el centro de forma óptima en los tres tipos de observación, alcanzando siempre la recompensa máxima.
 - La inclusión del canal de profundidad y las variables internas mejoró la rapidez del aprendizaje y la estabilidad de la política.
