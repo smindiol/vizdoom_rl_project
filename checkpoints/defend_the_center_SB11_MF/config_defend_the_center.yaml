@@ -3,7 +3,7 @@ env:
   input_shape: [2,100, 160]  #  Pon [3, H, W] aquí, el canal 4 se agrega dinámicamente
   actions: 3
   scenario_path: config/defend_the_center.cfg
-  
+
 training:
   episodes: 1000
   max_steps: 500
